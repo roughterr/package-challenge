@@ -38,4 +38,22 @@ public class Package {
         }
         return sb.toString();
     }
+
+    /**
+     * Returns a string that contains IDs of things separated by comma.
+     *
+     * @return
+     */
+    public String getThingsIDs() {
+        if (things.size() == 0) {
+            return "-";
+        }
+        StringBuilder sb = new StringBuilder();
+        things.forEach(thing -> {
+            sb.append(thing.getId() + ",");
+        });
+        //remove the last comma
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
 }

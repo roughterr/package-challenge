@@ -47,7 +47,7 @@ public class Packer {
                 String line;
                 while ((line = br.readLine()) != null) {
                     // process the line.
-                    result.append(packOnePackage(line));
+                    result.append(packOnePackage(line) + "\n");
                 }
             }
             return result.toString();
@@ -65,8 +65,7 @@ public class Packer {
     public static String packOnePackage(String inputLine) throws APIException {
         System.out.println("Processing line: " + inputLine);
         Package packageInputData = parseOnePackage(inputLine);
-        //TODO
-        return null;
+        return calculate(packageInputData).getThingsIDs();
     }
 
     /**
@@ -116,5 +115,16 @@ public class Packer {
         }
         float price = Float.valueOf(priceStr.substring(1));
         return new Thing(thingID, weight, price);
+    }
+
+    /**
+     * Calculates the most optimal combinations of things from one package (selected things should have weight
+     * less than max weight that a package can take and have the most total cost.
+     * @param packageInputData
+     * @return
+     */
+    public static Package calculate(Package packageInputData) {
+        //TODO
+        return null;
     }
 }
