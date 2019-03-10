@@ -11,15 +11,15 @@ public class Thing {
     /**
      * Weight.
      */
-    private float weidht;
+    private float weight;
     /**
      * Cost.
      */
     private float price;
 
-    public Thing(int id, float weidht, float price) {
+    public Thing(int id, float weight, float price) {
         this.id = id;
-        this.weidht = weidht;
+        this.weight = weight;
         this.price = price;
     }
 
@@ -27,8 +27,8 @@ public class Thing {
         return id;
     }
 
-    public float getWeidht() {
-        return weidht;
+    public float getWeight() {
+        return weight;
     }
 
     public float getPrice() {
@@ -37,6 +37,6 @@ public class Thing {
 
     @Override
     public String toString() {
-        return "(" + id + "," + weidht + ",€" + price + ")";
+        return "(" + id + "," + weight + ",€" + price + ")";
     }
 }

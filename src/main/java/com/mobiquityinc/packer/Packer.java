@@ -5,8 +5,8 @@ import com.mobiquityinc.packer.com.mobiquityinc.exception.APIException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Packer {
     /**
@@ -118,12 +118,31 @@ public class Packer {
     }
 
     /**
+     * 1) Removes things that exceed the weight and cost limits.
+     * 2) Sorts things by cost in reverse order.
+     *
+     * @param things input things
+     * @return filtered and sorted things
+     */
+    private static List<Thing> sortAndFilterThings(List<Thing> things) {
+        return things.stream()
+                .filter(thing -> thing.getPrice() <= MAX_WEIGHT_AND_COST_OF_ITEM && thing.getWeight() <= MAX_WEIGHT_AND_COST_OF_ITEM)
+                .sorted(Comparator.comparing(Thing::getPrice).reversed())
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Calculates the most optimal combinations of things from one package (selected things should have weight
-     * less than max weight that a package can take and have the most total cost.
+     * less than max weight that a package can take and have the biggest total cost.
+     *
      * @param packageInputData
      * @return
      */
     public static Package calculate(Package packageInputData) {
+        float packageWeightLimit = packageInputData.getWeightLimit() > MAX_WEIGHT_PACKAGE_CAN_TAKE ?
+                MAX_WEIGHT_PACKAGE_CAN_TAKE : packageInputData.getWeightLimit();
+        List<Thing> sortedThings = sortAndFilterThings(packageInputData.getThings());
+
         //TODO
         return null;
     }

@@ -19,7 +19,7 @@ public class Package {
         this.weightLimit = weightLimit;
     }
 
-    public Collection<Thing> getThings() {
+    public List<Thing> getThings() {
         return things;
     }
 
@@ -42,7 +42,7 @@ public class Package {
     /**
      * Returns a string that contains IDs of things separated by comma.
      *
-     * @return
+     * @return - symbol if the list of things is empty; numbers separated by commas if the list of things is not empty
      */
     public String getThingsIDs() {
         if (things.size() == 0) {
