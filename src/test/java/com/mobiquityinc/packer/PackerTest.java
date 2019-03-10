@@ -22,6 +22,12 @@ public class PackerTest {
                 "src\\test\\resources\\same-price-different-weight\\expected-packages.txt");
     }
 
+    @Test
+    public void test17Things() throws APIException, IOException {
+        testWithInputAndExpectedFile("src\\test\\resources\\more-than-15-things\\input.txt",
+                "src\\test\\resources\\more-than-15-things\\expected-packages.txt");
+    }
+
     /**
      * Tests the packer.
      *

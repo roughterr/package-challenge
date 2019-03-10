@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -160,7 +161,7 @@ public class Packer {
      */
     public static List<Thing> calculate(Package inputPackage) {
         Package cleanPackage = sortAndFilterThings(inputPackage);
-        return findBestCombination(cleanPackage.getThings(), cleanPackage.getWeightLimit(), 0f, 0);
+        return findBestCombination(Arrays.asList(), cleanPackage.getThings(), cleanPackage.getWeightLimit());
     }
 
     /**
@@ -191,29 +192,27 @@ public class Packer {
     /**
      * Finds the most optimal combination of things.
      *
-     * @param thingsToChooseFrom things to choose from
-     * @param weightLimit the total weight limit
-     * @param accumulatedWeight weight to add to
-     * @param accumulatedItemQuantity item quantity to add to
+     * @param chosenThings
+     * @param thingsToChooseFrom
+     * @param weightLimit
      * @return the most optimal combination of things
      */
-    private static List<Thing> findBestCombination(List<Thing> thingsToChooseFrom, float weightLimit, float accumulatedWeight, int accumulatedItemQuantity) {
-
-        // if we have an empty list or we have reached the item quantity limit, then we should stop the search
-        if (thingsToChooseFrom.isEmpty() || accumulatedItemQuantity == ITEM_QUANTITY_LIMIT) {
-            return thingsToChooseFrom;
+    private static List<Thing> findBestCombination(List<Thing> chosenThings, List<Thing> thingsToChooseFrom, float weightLimit) {
+        if (chosenThings.size() >= ITEM_QUANTITY_LIMIT || thingsToChooseFrom.isEmpty()) {
+            return chosenThings;
         }
         Thing firstThing = thingsToChooseFrom.get(0);
         List<Thing> withoutFirstList = cdr(thingsToChooseFrom);
-        List<Thing> withoutFirstBestCombi = findBestCombination(withoutFirstList, weightLimit, accumulatedWeight, accumulatedItemQuantity);
-        // if adding the first element will violate the weight constraint, then we should only consider the rest of items (reject the first item)
-        float weightIfWeAddFirst = accumulatedWeight + firstThing.getWeight();
+        List<Thing> withoutFirstBestCombination = findBestCombination(chosenThings, withoutFirstList, weightLimit);
+        float weightIfWeAddFirst = sumThingsWeight(chosenThings) + firstThing.getWeight();
+        // if we can never add the first
         if (weightIfWeAddFirst > weightLimit) {
-            return withoutFirstBestCombi;
+            return withoutFirstBestCombination;
         }
-        List<Thing> withFirstBestCombi = findBestCombination(withoutFirstList, weightLimit, weightIfWeAddFirst, accumulatedItemQuantity + 1);
-        withFirstBestCombi.add(firstThing);
-        return selectBetterCombination(withFirstBestCombi, withoutFirstBestCombi);
+        List<Thing> chosenThingsWithFirst = new ArrayList<>(chosenThings);
+        chosenThingsWithFirst.add(firstThing);
+        List<Thing> withFirstBestCombination = findBestCombination(chosenThingsWithFirst, withoutFirstList, weightLimit);
+        return selectBetterCombination(withFirstBestCombination, withoutFirstBestCombination);
     }
 
     /**
@@ -234,6 +233,12 @@ public class Packer {
         return sb.toString();
     }
 
+    /**
+     * Returns a copy of the list and removes the first element (if the list is not empty).
+     * @param list
+     * @param <T>
+     * @return
+     */
     public static <T> List<T> cdr(List<T> list) {
         if (list.isEmpty()) {
             return list;
