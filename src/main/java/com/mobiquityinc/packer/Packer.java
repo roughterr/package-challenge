@@ -120,28 +120,30 @@ public class Packer {
     /**
      * 1) Removes things that exceed the weight and cost limits.
      * 2) Sorts things by cost in reverse order.
+     * 3) Calculates the maximum weight of the package.
      *
-     * @param things input things
+     * @param inputPackage input package
      * @return filtered and sorted things
      */
-    private static List<Thing> sortAndFilterThings(List<Thing> things) {
-        return things.stream()
+    private static Package sortAndFilterThings(Package inputPackage) {
+        float packageWeightLimit = inputPackage.getWeightLimit() > MAX_WEIGHT_PACKAGE_CAN_TAKE ?
+                MAX_WEIGHT_PACKAGE_CAN_TAKE : inputPackage.getWeightLimit();
+        List<Thing> things = inputPackage.getThings().stream()
                 .filter(thing -> thing.getPrice() <= MAX_WEIGHT_AND_COST_OF_ITEM && thing.getWeight() <= MAX_WEIGHT_AND_COST_OF_ITEM)
                 .sorted(Comparator.comparing(Thing::getPrice).reversed())
                 .collect(Collectors.toList());
+        return new Package(things, packageWeightLimit);
     }
 
     /**
      * Calculates the most optimal combinations of things from one package (selected things should have weight
      * less than max weight that a package can take and have the biggest total cost.
      *
-     * @param packageInputData
+     * @param inputPackage
      * @return
      */
-    public static Package calculate(Package packageInputData) {
-        float packageWeightLimit = packageInputData.getWeightLimit() > MAX_WEIGHT_PACKAGE_CAN_TAKE ?
-                MAX_WEIGHT_PACKAGE_CAN_TAKE : packageInputData.getWeightLimit();
-        List<Thing> sortedThings = sortAndFilterThings(packageInputData.getThings());
+    public static Package calculate(Package inputPackage) {
+        Package cleanPackage = sortAndFilterThings(inputPackage);
 
         //TODO
         return null;
