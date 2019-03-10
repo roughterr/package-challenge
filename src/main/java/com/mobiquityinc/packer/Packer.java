@@ -5,7 +5,9 @@ import com.mobiquityinc.packer.com.mobiquityinc.exception.APIException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Packer {
@@ -65,7 +67,8 @@ public class Packer {
     public static String packOnePackage(String inputLine) throws APIException {
         System.out.println("Processing line: " + inputLine);
         Package packageInputData = parseOnePackage(inputLine);
-        return calculate(packageInputData).getThingsIDs();
+        List<Thing> bestCombination = calculate(packageInputData).stream().sorted(Comparator.comparing(Thing::getId)).collect(Collectors.toList());
+        return getThingsIDs(bestCombination);
     }
 
     /**
@@ -142,10 +145,107 @@ public class Packer {
      * @param inputPackage
      * @return
      */
-    public static Package calculate(Package inputPackage) {
+    public static List<Thing> calculate(Package inputPackage) {
         Package cleanPackage = sortAndFilterThings(inputPackage);
+        return findBestCombination(cleanPackage.getThings(), cleanPackage.getWeightLimit(), 0f, 0);
+    }
 
-        //TODO
-        return null;
+    /**
+     * Selects a better thing list. The first criterion is a bigger price, and the second criterion is a smaller weight.
+     *
+     * @param thingList1 list of things
+     * @param thingList2 list of things
+     * @return thingList1 or thingList2
+     */
+    private static List<Thing> selectBetterCombination(List<Thing> thingList1, List<Thing> thingList2) {
+        float thingList1WeightSum = sumThingsWeight(thingList1);
+        float thingList1CostSum = sumThingsCost(thingList1);
+        float thingList2WeightSum = sumThingsWeight(thingList2);
+        float thingList2CostSum = sumThingsCost(thingList2);
+        if (thingList1CostSum > thingList2CostSum) {
+            return thingList1;
+        } else if (thingList1CostSum < thingList2CostSum) {
+            return thingList2;
+        } else {
+            if (thingList1WeightSum > thingList2WeightSum) {
+                return thingList2;
+            } else {
+                return thingList1;
+            }
+        }
+    }
+
+    private static List<Thing> findBestCombination(List<Thing> thingsToChooseFrom, float weightLimit, float accumulatedWeight, int accumulatedItemQuantity) {
+
+        // if we have an empty list or we have reached the item quantity limit, then we should stop the search
+        if (thingsToChooseFrom.isEmpty() || accumulatedItemQuantity == ITEM_QUANTITY_LIMIT) {
+            return thingsToChooseFrom;
+        }
+        Thing firstThing = thingsToChooseFrom.get(0);
+        List<Thing> withoutFirstList = cdr(thingsToChooseFrom);
+        List<Thing> withoutFirstBestCombi = findBestCombination(withoutFirstList, weightLimit, accumulatedWeight, accumulatedItemQuantity);
+        // if adding the first element will violate the weight constraint, then we should only consider the rest of items (reject the first item)
+        float weightIfWeAddFirst = accumulatedWeight + firstThing.getWeight();
+        if (weightIfWeAddFirst > weightLimit) {
+            return withoutFirstBestCombi;
+        }
+        List<Thing> withFirstBestCombi = findBestCombination(withoutFirstList, weightLimit, weightIfWeAddFirst, accumulatedItemQuantity + 1);
+        withFirstBestCombi.add(firstThing);
+        return selectBetterCombination(withFirstBestCombi, withoutFirstBestCombi);
+    }
+
+    /**
+     * Returns a string that contains IDs of things separated by comma.
+     *
+     * @return - symbol if the list of things is empty; numbers separated by commas if the list of things is not empty
+     */
+    public static String getThingsIDs(List<Thing> things) {
+        if (things.size() == 0) {
+            return "-";
+        }
+        StringBuilder sb = new StringBuilder();
+        things.forEach(thing -> {
+            sb.append(thing.getId() + ",");
+        });
+        //remove the last comma
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public static <T> List<T> cdr(List<T> list) {
+        if (list.isEmpty()) {
+            return list;
+        }
+        List<T> newList = new ArrayList<>(list);
+        newList.remove(0);
+        return newList;
+    }
+
+    /**
+     * Sum cost of things in the list.
+     *
+     * @param things list of things
+     * @return cost of all the things that were in the list
+     */
+    public static float sumThingsCost(List<Thing> things) {
+        float sum = 0;
+        for (Thing thing : things) {
+            sum += thing.getPrice();
+        }
+        return sum;
+    }
+
+    /**
+     * Sum weight of things in the list.
+     *
+     * @param things list of things
+     * @return weight of all the things that were in the list
+     */
+    public static float sumThingsWeight(List<Thing> things) {
+        float sum = 0;
+        for (Thing thing : things) {
+            sum += thing.getWeight();
+        }
+        return sum;
     }
 }
