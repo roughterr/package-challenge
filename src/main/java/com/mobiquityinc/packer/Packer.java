@@ -49,7 +49,7 @@ public class Packer {
                 String line;
                 while ((line = br.readLine()) != null) {
                     // process the line.
-                    result.append(packOnePackage(line) + "\n");
+                    result.append(processOneLineAddLb(line));
                 }
             }
             return result.toString();
@@ -59,13 +59,26 @@ public class Packer {
     }
 
     /**
-     * Determines which	things to put into one package.
+     * Processes a line of input. Accepts an empty line as the argument. Adds a line break in the end of the String.
+     *
+     * @param inputLine a line of package input
+     * @return returns an empty line if the input was an empty line
+     * @throws APIException incorrect parameters are being passed
+     */
+    private static String processOneLineAddLb(String inputLine) throws APIException {
+        if (inputLine == null || inputLine.equals("")) {
+            return "";
+        }
+        return processOneLine(inputLine) + "\n";
+    }
+
+    /**
+     * Processes a line of input. Does not expect an empty line to be passed as the argument.
      *
      * @param inputLine a set of things, in the format of one line: {limit} : ({id},{weight},€{price}),({id},{weight},€{price})
      * @return the result in a format of the list of IDs or - symbol if the result is an empty list
      */
-    public static String packOnePackage(String inputLine) throws APIException {
-        System.out.println("Processing line: " + inputLine);
+    public static String processOneLine(String inputLine) throws APIException {
         Package packageInputData = parseOnePackage(inputLine);
         List<Thing> bestCombination = calculate(packageInputData).stream().sorted(Comparator.comparing(Thing::getId)).collect(Collectors.toList());
         return getThingsIDs(bestCombination);
@@ -175,6 +188,15 @@ public class Packer {
         }
     }
 
+    /**
+     * Finds the most optimal combination of things.
+     *
+     * @param thingsToChooseFrom things to choose from
+     * @param weightLimit the total weight limit
+     * @param accumulatedWeight weight to add to
+     * @param accumulatedItemQuantity item quantity to add to
+     * @return the most optimal combination of things
+     */
     private static List<Thing> findBestCombination(List<Thing> thingsToChooseFrom, float weightLimit, float accumulatedWeight, int accumulatedItemQuantity) {
 
         // if we have an empty list or we have reached the item quantity limit, then we should stop the search
