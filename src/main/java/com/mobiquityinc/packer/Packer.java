@@ -2,9 +2,9 @@ package com.mobiquityinc.packer;
 
 import com.mobiquityinc.packer.com.mobiquityinc.exception.APIException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -45,13 +45,10 @@ public class Packer {
      */
     public static String pack(String filePath) throws APIException {
         try {
+            List<String> inputLines = Files.readAllLines(Paths.get(filePath));
             StringBuilder result = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    // process the line.
-                    result.append(processOneLineAddLb(line));
-                }
+            for (String line: inputLines) {
+                result.append(processOneLineAddLb(line));
             }
             return result.toString();
         } catch (IOException e) {
@@ -70,7 +67,7 @@ public class Packer {
         if (inputLine == null || inputLine.equals("")) {
             return "";
         }
-        return processOneLine(inputLine) + "\n";
+        return processOneLine(inputLine) + "\r\n";
     }
 
     /**
@@ -221,7 +218,7 @@ public class Packer {
      * @return - symbol if the list of things is empty; numbers separated by commas if the list of things is not empty
      */
     public static String getThingsIDs(List<Thing> things) {
-        if (things.size() == 0) {
+        if (things.isEmpty()) {
             return "-";
         }
         StringBuilder sb = new StringBuilder();
